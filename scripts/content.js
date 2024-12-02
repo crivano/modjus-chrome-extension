@@ -1,6 +1,12 @@
 console.log('Content script loaded');
 // console.log('CKEDITOR', CKEDITOR);
 
+
+function unescapeHtmlB(escapedHtmlB) {
+    const doc = new DOMParser().parseFromString(escapedHtmlB, 'text/html');
+    return doc.documentElement.textContent || doc.body.textContent;
+}
+
 function unescapeHtml(string) {
     var htmlUnescapes = {
         '&amp;': '&',
@@ -21,7 +27,7 @@ function unescapeHtml(string) {
 }
 
 function modjusStart(url, data) {
-    fetch('http://localhost:3000/api/data-store', {
+    fetch('http://trf2-030372.corp.jfrj.gov.br:3000/api/data-store', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
