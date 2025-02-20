@@ -27,35 +27,40 @@ function unescapeHtml(string) {
 }
 
 function modjusStart(url, data) {
-    fetch('http://trf2-030372.corp.jfrj.gov.br:3000/api/data-store', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
-            console.log('Success:', result);
+    // Cria uma instância de URL para poder acessar facilmente o protocolo, host e porta (se houver)
+    const urlObj = new URL(url);
+    
+    const baseUrl = `${urlObj.protocol}//${urlObj.hostname}${urlObj.port ? ':' + urlObj.port : ''}`;
 
-            const form = document.querySelector("form");
-            const hundredpercent = "border:0;margin:0;padding:0;height:100%;width:100%;overflow:hidden";
-            const iframe = document.createElement("iframe");
-            iframe.src = `${url}?dataKey=${result.key}&url=${encodeURIComponent(url)}`;
-            iframe.frameborder = "0";
-            iframe.style = "border:0;margin:0;padding:0;height:100%;width:100%;overflow:hidden";
-            // iframe.style.display = "none";
-            document.documentElement.style = hundredpercent;
-            // _original_form_style_display = form.style.display;
-            // form.style.display = "none";
-            // form.style.display = _original_form_style_display;
-            const body = document.querySelector("body");
-            body.style = hundredpercent;
-            form.insertAdjacentElement("beforebegin", iframe);
-        })
-        .catch(error => {
-            console.log('Error:', error);
-        });
+    fetch(`${baseUrl}/api/data-store`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('Success:', result);
+
+        const form = document.querySelector("form");
+        const hundredpercent = "border:0;margin:0;padding:0;height:100%;width:100%;overflow:hidden";
+        const iframe = document.createElement("iframe");
+        iframe.src = `${url}?dataKey=${result.key}&url=${encodeURIComponent(url)}`;
+        iframe.frameborder = "0";
+        iframe.style = "border:0;margin:0;padding:0;height:100%;width:100%;overflow:hidden";
+        // iframe.style.display = "none";
+        document.documentElement.style = hundredpercent;
+        // _original_form_style_display = form.style.display;
+        // form.style.display = "none";
+        // form.style.display = _original_form_style_display;
+        const body = document.querySelector("body");
+        body.style = hundredpercent;
+        form.insertAdjacentElement("beforebegin", iframe);
+    })
+    .catch(error => {
+        console.log('Error:', error);
+    });
 }
 
 function modjusStop(html) {
