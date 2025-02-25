@@ -1,0 +1,23 @@
+<!-- popup.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Referencia o CSS -->
+</head>
+<body>
+    <div id="error-modal" class="modal">
+        <div class="modal-content">
+            <h2>Ocorreu um erro!</h2>
+            <p id="error-message">Um erro aconteceu, por favor tente novamente mais tarde.</p>
+            <button id="close-btn">Fechar</button>
+            <button id="details-btn">Mais detalhes</button>
+            <div id="error-details" class="error-details" style="display: none;">
+                <pre id="detailed-message"></pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
