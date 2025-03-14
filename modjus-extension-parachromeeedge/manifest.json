@@ -40,9 +40,10 @@
       "matches": ["<all_urls>"]
     }
   ],
-  "applications": {
-    "gecko": {
-      "id": "modjus_extension@sei.com"
-    }
-  }
+  "host_permissions": [
+    "http://localhost/*",
+    "https://sei-apresentacao.trf2.jus.br/*",
+    "https://sei-desenvolvimento.trf2.jus.br/*",
+    "https://sei.trf2.jus.br/*"
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "SEI - Modjus Extension",
   "version": "1.0",
   "description": "Permite a execução de modelos complexos no SEI",
@@ -13,7 +13,7 @@
     "activeTab"
   ],
   "background": {
-    "service_worker": "scripts/background.js"
+    "scripts": ["scripts/background.js"]
   },
   "content_scripts": [
     {
@@ -27,7 +27,7 @@
       "css": ["styles/styles.css"]
     }
   ],
-  "action": {
+  "browser_action": {
     "default_popup": "popup.html",
     "default_icon": {
       "16": "images/icon-16.png",
@@ -35,10 +35,13 @@
     }
   },
   "web_accessible_resources": [
-    {
-      "resources": ["js/listen.js"],
-      "matches": ["<all_urls>"]
-    }
+    "assets/prompt.js",
+    "images/icon-16.png",
+    "images/icon-32.png",
+    "images/icon-64.png",
+    "images/icon-128.png",
+    "styles/styles.css",
+    "js/listen.js"
   ],
   "applications": {
     "gecko": {

@@ -1,0 +1,46 @@
+{
+  "name": "SEI - Modjus Extension",
+  "version": "1.0",
+  "description": "Permite a execução de modelos complexos no SEI",
+  "icons": {
+    "16": "images/icon-16.png",
+    "32": "images/icon-32.png",
+    "64": "images/icon-64.png",
+    "128": "images/icon-128.png"
+  },
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "js": [
+        "scripts/content.js"
+      ],
+      "matches": [
+        "http://localhost/*",
+        "https://sei-apresentacao.trf2.jus.br/*",
+        "https://sei-desenvolvimento.trf2.jus.br/*",
+        "https://sei.trf2.jus.br/*"
+      ],
+      "css": [
+        "styles/styles.css"
+      ]
+    }
+  ],
+  "background": {
+    "scripts": [
+      "scripts/background.js"
+    ]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "js/listen.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "manifest_version": 2
+}
