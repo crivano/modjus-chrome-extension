@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SEI - Modjus Extension",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Permite a execução de modelos complexos no SEI",
   "icons": {
     "16": "images/icon-16.png",
