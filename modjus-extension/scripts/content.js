@@ -166,12 +166,11 @@ for (const textarea of textareas) {
     }
 }
 
-
-function injectScript(file, node) {
-    var th = document.getElementsByTagName(node)[0];
-    var s = document.createElement('script');
-    s.setAttribute('type', 'text/javascript');
-    s.setAttribute('src', file);
-    th.appendChild(s);
-}
-injectScript(chrome.runtime.getURL('/js/listen.js'), 'body');
+(function injectScriptInPageContext() {
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('js/listen.js');
+    script.onload = function () {
+        this.remove(); // remove o script após executar
+    };
+    (document.head || document.documentElement).appendChild(script);
+})();
