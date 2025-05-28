@@ -1,6 +1,6 @@
 console.log('Content script loaded');
-// console.log('CKEDITOR', CKEDITOR);
 
+// =================== UTILS ===================
 
 function unescapeHtmlB(escapedHtmlB) {
     const doc = new DOMParser().parseFromString(escapedHtmlB, 'text/html');
@@ -8,39 +8,26 @@ function unescapeHtmlB(escapedHtmlB) {
 }
 
 function unescapeHtml(string) {
-    var htmlUnescapes = {
+    const htmlUnescapes = {
         '&amp;': '&',
         '&lt;': '<',
         '&gt;': '>',
         '&quot;': '"',
         '&#39;': "'"
     };
-
-    function basePropertyOf(object) {
-        return function(key) {
-            return object == null ? undefined : object[key];
-        };
-    }
-    const reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g
-    const reUnescapedHtml = /[&<>"']/g
-    return string.replace(reEscapedHtml, basePropertyOf(htmlUnescapes))
+    return string.replace(/&(?:amp|lt|gt|quot|#39);/g, match => htmlUnescapes[match]);
 }
 
-// scripts/content.js
-
-// Função para mostrar a modal de erro
 function showErrorModal(message, details) {
-    // Verifica se a modal já existe no DOM, caso contrário, cria ela
     let modal = document.getElementById('error-modal');
     if (!modal) {
-        // Cria a modal e insere no corpo da página
         modal = document.createElement('div');
         modal.id = 'error-modal';
         modal.className = 'modal';
         modal.innerHTML = `
             <div class="modal-content">
                 <h2>Ocorreu um erro!</h2>
-                <p id="error-message">Um erro aconteceu, por favor tente novamente mais tarde.</p>
+                <p id="error-message"></p>
                 <button id="close-btn">Fechar</button>
                 <button id="details-btn">Mais detalhes</button>
                 <div id="error-details" class="error-details" style="display: none;">
@@ -51,64 +38,53 @@ function showErrorModal(message, details) {
         document.body.appendChild(modal);
     }
 
-    const messageElem = document.getElementById('error-message');
-    const detailsBtn = document.getElementById('details-btn');
-    const closeBtn = document.getElementById('close-btn');
-    const errorDetails = document.getElementById('error-details');
-    const detailedMessageElem = document.getElementById('detailed-message');
+    document.getElementById('error-message').textContent = message;
+    document.getElementById('detailed-message').textContent = details;
 
-    // Atualiza a mensagem principal da modal
-    messageElem.textContent = message;
-
-    // Se houver detalhes do erro, prepara para exibir quando clicado
-    detailsBtn.onclick = () => {
-        errorDetails.style.display = 'block';
-        detailedMessageElem.textContent = details;
+    document.getElementById('details-btn').onclick = () => {
+        document.getElementById('error-details').style.display = 'block';
     };
 
-    // Fecha a modal
-    closeBtn.onclick = () => {
+    document.getElementById('close-btn').onclick = () => {
         modal.style.display = 'none';
     };
 
-    // Exibe a modal
     modal.style.display = 'flex';
 }
 
+// =================== CORE ===================
+
 function modjusStart(url, data) {
-    // Cria uma instância de URL para poder acessar facilmente o protocolo, host e porta (se houver)
     const urlObj = new URL(url);
     const baseUrl = `${urlObj.protocol}//${urlObj.hostname}${urlObj.port ? ':' + urlObj.port : ''}`;
 
     fetch(`${baseUrl}/api/data-store`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     })
     .then(response => response.json())
     .then(result => {
         console.log('Success:', result);
 
-        const form = document.querySelector("form");
-        const hundredpercent = "border:0;margin:0;padding:0;height:100%;width:100%;overflow:hidden";
         const iframe = document.createElement("iframe");
-
-        // Adiciona o src ao iframe
         iframe.src = `${url}?dataKey=${result.key}&url=${encodeURIComponent(url)}`;
-        iframe.frameborder = "0";
         iframe.style = "border:0;margin:0;padding:0;height:100%;width:100%;overflow:hidden";
-        
-        // Modifica os estilos da página
-        document.documentElement.style = hundredpercent;
-        const body = document.querySelector("body");
-        body.style = hundredpercent;
-        
-        // Insere o iframe na página
-        form.insertAdjacentElement("beforebegin", iframe);
+        iframe.frameborder = "0";
 
-        // Tratamento de erro no iframe (caso falhe ao carregar)
+        document.documentElement.style = "border:0;margin:0;padding:0;height:100%;width:100%;overflow:hidden";
+        document.body.style = "border:0;margin:0;padding:0;height:100%;width:100%;overflow:hidden";
+ 
+        const form = document.querySelector("form");
+        if (form) {
+            console.log("📎 Inserindo iframe antes do <form>");
+            form.insertAdjacentElement("beforebegin", iframe);
+        } else {
+            console.warn("⚠️ Nenhum <form> encontrado, adicionando no <body>");
+            document.body.insertBefore(iframe, document.body.firstChild);
+        }
+        
+
         iframe.onerror = function (error) {
             showErrorModal(
                 "Ocorreu um erro ao tentar carregar o conteúdo.",
@@ -117,7 +93,6 @@ function modjusStart(url, data) {
         };
     })
     .catch(error => {
-        // Se o erro for no fetch, mostra a modal com a URL de base
         showErrorModal(
             "Ocorreu um erro ao tentar carregar os dados.",
             `Erro ao tentar acessar a URL para carregar os dados do documento : ${baseUrl}/api/data-store \nDetalhes: ${error.message}`
@@ -125,23 +100,59 @@ function modjusStart(url, data) {
     });
 }
 
-
-
 function modjusStop(html) {
     const iframe = document.querySelector("iframe");
-    iframe.style.display = "none";
-    const form = document.querySelector("form");
-    // form.style.display = _original_form_style_display;
+    if (iframe) iframe.remove();
+
+    console.log('🧪 HTML recebido do aplicativo:', html);
+
+    // Trata textareas (CKEditor 4)
+    const textareas = document.querySelectorAll('textarea');
     for (const textarea of textareas) {
-        const text = textarea.value;
-        if (text && text.includes("modjus-url=\"")) {
-            textarea.innerText = html
-            window.postMessage({ type: 'UPDATE_EDITORS', payload: { id: textarea.name, html: html } }, '*')
-                // window.CKEDITOR.instances[textarea.id].setData(html);
-            break
+        if (textarea.value && textarea.value.includes('modjus-url="')) {
+            textarea.value = html;
+            window.postMessage({
+                type: 'UPDATE_EDITORS',
+                payload: { id: textarea.name, html: html }
+            }, '*');
+            return;
         }
     }
+
+    // Trata CKEditor 5 — substitui div com modjus-url dentro de txaEditor_xxxx
+    const editors = document.querySelectorAll('div[id^="txaEditor_"]');
+    for (const editorContainer of editors) {
+        const oldModjus = editorContainer.querySelector('div[modjus-url]');
+        if (!oldModjus) continue;
+
+        // Cria DOM virtual a partir do novo HTML
+        const temp = document.createElement('div');
+        temp.innerHTML = html.trim();
+
+        // Procura pela nova div[modjus-url] dentro do HTML retornado
+        const newModjus = temp.querySelector('div[modjus-url]');
+        if (!newModjus) {
+            console.warn('⚠️ O HTML retornado não contém uma nova div[modjus-url]');
+            return;
+        }
+
+        // Substitui a div original pela nova
+        oldModjus.replaceWith(newModjus);
+
+        console.log('✅ Conteúdo modjus substituído com sucesso.');
+
+        window.postMessage({
+            type: 'UPDATE_EDITORS',
+            payload: { id: editorContainer.id, html }
+        }, '*');
+
+        return;
+    }
+
+    console.warn('modjusStop: Nenhum editor com modjus-url encontrado.');
 }
+
+// =================== EVENTOS ===================
 
 window.addEventListener('message', (event) => {
     if (event.data.type === 'SAVE_DATA') {
@@ -150,28 +161,42 @@ window.addEventListener('message', (event) => {
     }
 });
 
-const textareas = document.querySelectorAll("textarea");
+// =================== OBSERVADOR ===================
 
-for (const textarea of textareas) {
-    const text = textarea.value;
-    if (text && text.includes("modjus-url=\"")) {
-        const url = text.match(/modjus-url="([^"]+)"/)[1];
-        const jsonenc = text.match(/modjus-data="([^"]+)"/)[1];
-        const json = unescapeHtml(jsonenc);
-        const data = json ? JSON.parse(json) : undefined
-        console.log('url', url);
-        console.log('data', data);
-        // modjusStart(`${url}?data=${encodeURIComponent(json)}&url=${encodeURIComponent(url)}`, data);
-        modjusStart(url, data);
+function iniciarModjus() {
+    const elements = document.querySelectorAll('textarea, div');
+
+    for (const el of elements) {
+        const text = el.value !== undefined ? el.value : el.innerHTML;
+
+        if (text && text.includes('modjus-url="')) {
+            const urlMatch = text.match(/modjus-url="([^"]+)"/);
+            const dataMatch = text.match(/modjus-data="([^"]+)"/);
+
+            if (urlMatch && dataMatch) {
+                const url = urlMatch[1];
+                const jsonenc = dataMatch[1];
+                const json = unescapeHtml(jsonenc);
+                const data = json ? JSON.parse(json) : undefined;
+
+                console.log('url', url);
+                console.log('data', data);
+
+                modjusStart(url, data);
+            }
+            break;
+        }
     }
 }
 
+// =================== SCRIPT EXTRA ===================
 
 function injectScript(file, node) {
-    var th = document.getElementsByTagName(node)[0];
-    var s = document.createElement('script');
+    const th = document.getElementsByTagName(node)[0];
+    const s = document.createElement('script');
     s.setAttribute('type', 'text/javascript');
     s.setAttribute('src', file);
     th.appendChild(s);
 }
+
 injectScript(chrome.runtime.getURL('/js/listen.js'), 'body');

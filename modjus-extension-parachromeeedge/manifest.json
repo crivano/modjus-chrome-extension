@@ -9,9 +9,6 @@
     "64": "images/icon-64.png",
     "128": "images/icon-128.png"
   },
-  "permissions": [
-    "activeTab"
-  ],
   "background": {
     "service_worker": "scripts/background.js"
   },
@@ -34,17 +31,22 @@
       "128": "images/icon-128.png"
     }
   },
-  "web_accessible_resources": [
-    {
-      "resources": ["js/listen.js"],
-      "matches": ["<all_urls>"]
-    }
-  ],
   "host_permissions": [
     "http://localhost/*",
     "https://sei-apresentacao.trf2.jus.br/*",
     "https://sei-desenvolvimento.trf2.jus.br/*",
     "https://sei.trf2.jus.br/*"
   ],
+  "web_accessible_resources": [
+  {
+    "resources": ["js/listen.js"],
+    "matches": [
+      "http://localhost/*",
+      "https://sei-apresentacao.trf2.jus.br/*",
+      "https://sei-desenvolvimento.trf2.jus.br/*",
+      "https://sei.trf2.jus.br/*"
+    ]
+  }
+],
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqesiFkrcbD27wiK4L5at1YKvCo1g3a7pthD/SLyWHu1A+TUbfwSN5dzh8/kdh6rKD+EeEnK2MIpnm2wu4DV40RdIWViy2QMaLts3J6MjQuTIHOr6GcWaEk98kVORrJmfsz1UvGO2WgZdPPc/aKpPw25WKbvORbqfs9ZEvMgUJnSWME0LNhUZ70F45pmMyQdwJBDtfO2saIaKQsxyl84Vg8c3xhCqUvV+XHGDQ96A12mpzQFbLNDKZhICKhMhPsmo0mAqnnB5PENndqTn+xLOqKqdGA4/LPIxkw77ynkhCdVCKYgc9bb/e2Ma8j6oM0/zxPcPaAloCXE6K20fjvGyeQIDAQAB"
 }
