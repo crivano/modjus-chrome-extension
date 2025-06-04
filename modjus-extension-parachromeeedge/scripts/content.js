@@ -1,7 +1,3 @@
-console.log('Content script loaded');
-// console.log('CKEDITOR', CKEDITOR);
-
-
 function unescapeHtmlB(escapedHtmlB) {
     const doc = new DOMParser().parseFromString(escapedHtmlB, 'text/html');
     return doc.documentElement.textContent || doc.body.textContent;
@@ -79,7 +75,6 @@ function modjusStart(url, data) {
     // Cria uma instância de URL para poder acessar facilmente o protocolo, host e porta (se houver)
     const urlObj = new URL(url);
     const baseUrl = `${urlObj.protocol}//${urlObj.hostname}${urlObj.port ? ':' + urlObj.port : ''}`;
-
     fetch(`${baseUrl}/api/data-store`, {
         method: 'POST',
         headers: {
@@ -89,9 +84,11 @@ function modjusStart(url, data) {
     })
     .then(response => response.json())
     .then(result => {
-        console.log('Success:', result);
 
-        const form = document.querySelector("form");
+        let form = document.querySelector("div.infra-editor__editor-completo");
+        if (!form) {
+            form = document.querySelector("form");
+        }
         const hundredpercent = "border:0;margin:0;padding:0;height:100%;width:100%;overflow:hidden";
         const iframe = document.createElement("iframe");
 
@@ -130,48 +127,65 @@ function modjusStart(url, data) {
 function modjusStop(html) {
     const iframe = document.querySelector("iframe");
     iframe.style.display = "none";
-    const form = document.querySelector("form");
-    // form.style.display = _original_form_style_display;
-    for (const textarea of textareas) {
-        const text = textarea.value;
-        if (text && text.includes("modjus-url=\"")) {
-            textarea.innerText = html
-            window.postMessage({ type: 'UPDATE_EDITORS', payload: { id: textarea.name, html: html } }, '*')
-                // window.CKEDITOR.instances[textarea.id].setData(html);
-            break
+
+    if (divElement !=null) { // sei 5
+        divElement.setAttribute("modjus-data", html);
+        window.postMessage({ type: 'UPDATE_EDITORS', payload: { id: parentDivId, html: html } }, '*');
+    }else{  // sei 4
+        for (const textarea of textareas) {
+            const text = textarea.value;
+            if (text && text.includes("modjus-url=\"")) {
+                textarea.innerText = html
+                window.postMessage({ type: 'UPDATE_EDITORS', payload: { id: textarea.name, html: html } }, '*');
+                break
+            }
         }
     }
+
 }
 
 window.addEventListener('message', (event) => {
     if (event.data.type === 'SAVE_DATA') {
-        console.log('Dados recebidos no parent frame:', event.data.payload);
         modjusStop(event.data.payload);
     }
 });
 
+const divElement = document.querySelector("div[modjus-data][modjus-url]");
+const parentDiv = divElement ? divElement.parentElement.closest('div[id]') : null;
+const parentDivId = parentDiv ? parentDiv.id : null;
+
 const textareas = document.querySelectorAll("textarea");
 
-for (const textarea of textareas) {
-    const text = textarea.value;
-    if (text && text.includes("modjus-url=\"")) {
-        const url = text.match(/modjus-url="([^"]+)"/)[1];
-        const jsonenc = text.match(/modjus-data="([^"]+)"/)[1];
-        const json = unescapeHtml(jsonenc);
-        const data = json ? JSON.parse(json) : undefined
-        console.log('url', url);
-        console.log('data', data);
-        // modjusStart(`${url}?data=${encodeURIComponent(json)}&url=${encodeURIComponent(url)}`, data);
-        modjusStart(url, data);
+if (divElement != null) { // sei 5
+    const modjusData = divElement.getAttribute("modjus-data");
+    const modjusUrl = divElement.getAttribute("modjus-url");
+    if (modjusData && modjusUrl) {
+        const json = unescapeHtml(modjusData);
+        const data = json ? JSON.parse(json) : undefined;
+        modjusStart(modjusUrl, data);
+    }
+}else{ // sei 4
+    for (const textarea of textareas) {
+        const text = textarea.value;
+        if (text && text.includes("modjus-url=\"")) {
+            const url = text.match(/modjus-url="([^"]+)"/)[1];
+            const jsonenc = text.match(/modjus-data="([^"]+)"/)[1];
+            const json = unescapeHtml(jsonenc);
+            const data = json ? JSON.parse(json) : undefined
+            modjusStart(url, data);
+        }
     }
 }
 
 
-function injectScript(file, node) {
+
+function injectScript(file, node, callback) {
     var th = document.getElementsByTagName(node)[0];
     var s = document.createElement('script');
     s.setAttribute('type', 'text/javascript');
     s.setAttribute('src', file);
+    s.onload = callback;
     th.appendChild(s);
 }
+
 injectScript(chrome.runtime.getURL('/js/listen.js'), 'body');
