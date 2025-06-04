@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SEI - Modjus Extension",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Permite a execução de modelos complexos no SEI",
   "icons": {
     "16": "images/icon-16.png",
@@ -19,6 +19,7 @@
         "http://localhost/*",
         "https://sei-apresentacao.trf2.jus.br/*",
         "https://sei-desenvolvimento.trf2.jus.br/*",
+        "https://seiv5-tst.trf2.jus.br/sei/*",
         "https://sei.trf2.jus.br/*"
       ],
       "css": ["styles/styles.css"]
@@ -32,10 +33,11 @@
     }
   },
   "host_permissions": [
-    "http://localhost/*",
-    "https://sei-apresentacao.trf2.jus.br/*",
-    "https://sei-desenvolvimento.trf2.jus.br/*",
-    "https://sei.trf2.jus.br/*"
+      "http://localhost/*",
+      "https://sei-apresentacao.trf2.jus.br/*",
+      "https://sei-desenvolvimento.trf2.jus.br/*",
+      "https://seiv5-tst.trf2.jus.br/sei/*",
+      "https://sei.trf2.jus.br/*"
   ],
   "web_accessible_resources": [
   {
@@ -44,6 +46,7 @@
       "http://localhost/*",
       "https://sei-apresentacao.trf2.jus.br/*",
       "https://sei-desenvolvimento.trf2.jus.br/*",
+      "https://seiv5-tst.trf2.jus.br/sei/*",
       "https://sei.trf2.jus.br/*"
     ]
   }
